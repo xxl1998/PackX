@@ -25,9 +25,9 @@ cd $SRC_DIR
 mkdir -p build
 mkdir install
 cd build
-#cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install/usr/local
-#make -j$(nproc)
-#make install
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install/usr/local
+make -j$(nproc)
+make install
 cd ..
 mkdir -p ${SRC_DIR}/install/DEBIAN
 cp  "${PROJ_PATH}/debian/control" "${SRC_DIR}/install/DEBIAN/control"

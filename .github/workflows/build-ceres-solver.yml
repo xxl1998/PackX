@@ -28,15 +28,12 @@ jobs:
             libatlas-base-dev libsuitesparse-dev \
             debhelper devscripts fakeroot wget
 
-      - name: check files
-        working-directory: ${{ env.PROJ_PATH }}
-        run: ./scripts/build_deb.sh
-
       - name: Build DEB package
         working-directory: ${{ env.PROJ_PATH }}
         run: ./scripts/build_deb.sh
 
       - name: Move DEB file to known location
+        working-directory: ${{ env.PROJ_PATH }}
         run: |
           mkdir -p /tmp/artifacts
           cp -v *.deb /tmp/artifacts/
