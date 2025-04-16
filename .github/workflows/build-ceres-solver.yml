@@ -9,12 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:20.04
-
+    outputs:
+      artifact-path: ${{ steps.set-path.outputs.artifact-path }}
     steps:
       - name: Install required tools
-        run: |
-          apt-get update
-          apt-get install -y git sudo
+        run: apt update && apt install -y git sudo
 
       - name: Checkout source
         uses: actions/checkout@v3
@@ -31,8 +30,20 @@ jobs:
         working-directory: projects/ceres-solver
         run: ./scripts/build_deb.sh
 
-      - name: Upload DEB artifact
+      - name: Set output path
+        id: set-path
+        run: echo "artifact-path=$(realpath projects/ceres-solver/../*.deb)" >> "$GITHUB_OUTPUT"
+
+  upload:
+    name: Upload DEB from host
+    runs-on: ubuntu-latest
+    needs: build-ceres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Upload DEB
         uses: actions/upload-artifact@v3
         with:
           name: ceres-solver-deb
-          path: ../*.deb
+          path: projects/ceres-solver/../*.deb
