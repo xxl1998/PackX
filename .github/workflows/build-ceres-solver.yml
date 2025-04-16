@@ -6,16 +6,23 @@ on:
 jobs:
   build-ceres:
     name: Build Ceres Solver DEB
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
 
     steps:
+      - name: Install required tools
+        run: |
+          apt-get update
+          apt-get install -y git sudo
+
       - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake make build-essential \
+          apt-get update
+          apt-get install -y cmake make build-essential \
             libeigen3-dev libgflags-dev libgoogle-glog-dev \
             libatlas-base-dev libsuitesparse-dev \
             debhelper devscripts fakeroot wget
