@@ -19,10 +19,6 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: check files
-        working-directory: ${{ env.PROJ_PATH }}
-        run: ./scripts/build_deb.sh
-
       - name: Install build dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
@@ -31,6 +27,10 @@ jobs:
             libeigen3-dev libgflags-dev libgoogle-glog-dev \
             libatlas-base-dev libsuitesparse-dev \
             debhelper devscripts fakeroot wget
+
+      - name: check files
+        working-directory: ${{ env.PROJ_PATH }}
+        run: ./scripts/build_deb.sh
 
       - name: Build DEB package
         working-directory: ${{ env.PROJ_PATH }}
