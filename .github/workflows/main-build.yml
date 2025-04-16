@@ -1,0 +1,11 @@
+name: Build DEB Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-ceres:
+    uses: ./projects/ceres-solver/build.yml

@@ -1,0 +1,15 @@
+Source: ceres-solver
+Section: libs
+Priority: optional
+Maintainer: xxl1998 <50321124+xxl1998@users.noreply.github.com>
+Build-Depends: debhelper (>= 11), cmake, make,
+               libeigen3-dev, libgflags-dev, libgoogle-glog-dev,
+               libatlas-base-dev, libsuitesparse-dev
+Standards-Version: 4.1.4
+Homepage: http://ceres-solver.org
+
+Package: libceres-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Ceres Solver - A non-linear optimization library
+ A large-scale C++ library for solving optimization problems, often used in robotics, vision, and graphics.

@@ -1,0 +1,31 @@
+name: Build Ceres DEB
+
+on:
+  workflow_call:
+
+jobs:
+  build-ceres:
+    name: Build Ceres Solver DEB
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make build-essential \
+            libeigen3-dev libgflags-dev libgoogle-glog-dev \
+            libatlas-base-dev libsuitesparse-dev \
+            debhelper devscripts fakeroot wget
+
+      - name: Build DEB package
+        working-directory: projects/ceres-solver
+        run: ./scripts/build_deb.sh
+
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ceres-solver-deb
+          path: ../*.deb
