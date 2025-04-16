@@ -25,12 +25,16 @@ cd $SRC_DIR
 mkdir -p build
 mkdir install
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install/usr/local
-make -j$(nproc)
-make install
+#cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install/usr/local
+#make -j$(nproc)
+#make install
 cd ..
 mkdir -p ${SRC_DIR}/install/DEBIAN
 cp  "${PROJ_PATH}/debian/control" "${SRC_DIR}/install/DEBIAN/control"
+echo "REPO_PATH=$REPO_PATH"
+echo "PROJ_PATH=$PROJ_PATH"
+ls -al ${SRC_DIR}/install/DEBIAN
+ls -al ${PROJ_PATH}/debian/control
 fakeroot dpkg-deb --build install ../ceres-solver_2.2.0_amd64.deb
 
 # ==== Done ====

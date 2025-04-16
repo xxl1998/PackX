@@ -19,6 +19,10 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
+      - name: check files
+        working-directory: ${{ env.PROJ_PATH }}
+        run: ./scripts/build_deb.sh
+
       - name: Install build dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
