@@ -20,6 +20,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt-get update
           apt-get install -y cmake make build-essential \
             libeigen3-dev libgflags-dev libgoogle-glog-dev \
