@@ -9,8 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:20.04
-    outputs:
-      artifact-path: ${{ steps.set-path.outputs.artifact-path }}
+    env:
+      REPO_PATH: ${{ github.workspace }}
+      PROJ_PATH: ${{ github.workspace }}/projects/ceres-solver
     steps:
       - name: Install required tools
         run: apt update && apt install -y git sudo
@@ -28,23 +29,30 @@ jobs:
             debhelper devscripts fakeroot wget
 
       - name: Build DEB package
-        working-directory: projects/ceres-solver
+        working-directory: ${{ env.PROJ_PATH }}
         run: ./scripts/build_deb.sh
 
-      - name: Set output path
-        id: set-path
-        run: echo "artifact-path=$(realpath projects/ceres-solver/../*.deb)" >> "$GITHUB_OUTPUT"
+      - name: Move DEB file to known location
+        run: |
+          mkdir -p /tmp/artifacts
+          cp -v *.deb /tmp/artifacts/
+
+      - name: Upload artifact for host
+        uses: actions/upload-artifact@v3
+        with:
+          name: ceres-solver-deb
+          path: /tmp/artifacts/*.deb
 
   upload:
     name: Upload DEB from host
     runs-on: ubuntu-latest
     needs: build-ceres
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Upload DEB
-        uses: actions/upload-artifact@v3
+      - name: Download artifact
+        uses: actions/download-artifact@v3
         with:
           name: ceres-solver-deb
-          path: projects/ceres-solver/../*.deb
+          path: ./output
+
+      - name: List downloaded files
+        run: ls -l ./output

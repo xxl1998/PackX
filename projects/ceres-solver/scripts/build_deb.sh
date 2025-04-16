@@ -18,7 +18,7 @@ rm -rf $SRC_DIR
 tar -xzf $TARBALL
 
 # ==== Inject debian/ folder ====
-cp -r ../debian $SRC_DIR/debian
+cp -r "${PROJ_PATH}/debian" "${SRC_DIR}/debian"
 
 # ==== Build ====
 cd $SRC_DIR
