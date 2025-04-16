@@ -8,4 +8,4 @@ on:
 
 jobs:
   build-ceres:
-    uses: ./projects/ceres-solver/build.yml
+    uses: ./.github/workflows/build-ceres-solver.yml
