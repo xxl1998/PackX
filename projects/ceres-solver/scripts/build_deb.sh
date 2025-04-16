@@ -3,7 +3,7 @@ set -e
 
 # ==== Configuration ====
 VERSION=2.2.0
-SRC_DIR=ceres-solver-$VERSION
+SRC_DIR=${PROJ_PATH}/ceres-solver-$VERSION
 TARBALL=ceres-solver-$VERSION.tar.gz
 URL=https://github.com/ceres-solver/ceres-solver/archive/refs/tags/$VERSION.tar.gz
 
@@ -34,7 +34,7 @@ cp  "${PROJ_PATH}/debian/control" "${SRC_DIR}/install/DEBIAN/control"
 echo "REPO_PATH=$REPO_PATH"
 echo "PROJ_PATH=$PROJ_PATH"
 ls -al ${SRC_DIR}/install/DEBIAN
-ls -al ${PROJ_PATH}/debian/control
+ls -al ${PROJ_PATH}/debian/
 fakeroot dpkg-deb --build install ../ceres-solver_2.2.0_amd64.deb
 
 # ==== Done ====
