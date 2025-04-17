@@ -1,41 +1,56 @@
-name: Build Ceres DEB
+name: Build Ceres Solver DEB (Matrix)
 
 on:
   workflow_call:
 
 jobs:
   build-ceres:
-    name: Build Ceres Solver DEB
+    name: Build Ceres Solver deb for ${{ matrix.arch }} / Ubuntu ${{ matrix.ubuntu }}
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
     env:
       REPO_PATH: ${{ github.workspace }}
       PROJ_PATH: ${{ github.workspace }}/projects/ceres-solver
-    steps:
-      - name: Install required tools
-        run: apt update && apt install -y git sudo
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        ubuntu: [20.04, 22.04, 24.04]
 
-      - name: Checkout source
+    steps:
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install build dependencies
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Package in Docker
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install -y cmake make build-essential \
-            libeigen3-dev libgflags-dev libgoogle-glog-dev \
-            libatlas-base-dev libsuitesparse-dev \
-            debhelper devscripts fakeroot wget
+          IMAGE=ubuntu:${{ matrix.ubuntu }}
+          ARCH=${{ matrix.arch }}
+          TAG=ceres-${ARCH}-ubuntu${{ matrix.ubuntu }}
 
-      - name: Build DEB package
-        working-directory: ${{ env.PROJ_PATH }}
-        run: ./scripts/build_deb.sh
+          docker run --rm --platform=linux/${ARCH} \
+            -v ${{ github.workspace }}:/workspace \
+            $IMAGE \
+            bash -c "apt update && \
+                     apt install -y sudo git wget cmake make build-essential \
+                     libeigen3-dev libgflags-dev libgoogle-glog-dev \
+                     libatlas-base-dev libsuitesparse-dev fakeroot dpkg-dev && \
+                     cd /workspace/projects/ceres-solver && \
+                     ARCH=$ARCH UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=${{ env.PROJ_PATH }} ./scripts/build_deb.sh"
 
-      - name: Upload DEB package
+      - name: Rename .deb with matrix info
+        run: |
+          cd projects/ceres-solver
+          DEB=$(ls *.deb)
+          mv "$DEB" "ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb"
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ceres-solver-deb
-          path: ${{ env.PROJ_PATH }}/*.deb
+          name: ceres-solver-${{ matrix.arch }}-ubuntu${{ matrix.ubuntu }}
+          path: projects/ceres-solver/ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb
           if-no-files-found: error
           compression-level: 0

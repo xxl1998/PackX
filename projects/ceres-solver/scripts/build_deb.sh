@@ -35,7 +35,7 @@ echo "REPO_PATH=$REPO_PATH"
 echo "PROJ_PATH=$PROJ_PATH"
 ls -al ${SRC_DIR}/install/DEBIAN
 ls -al ${PROJ_PATH}/debian/
-fakeroot dpkg-deb --build install ../ceres-solver_2.2.0_amd64.deb
+fakeroot dpkg-deb --build install ../ceres-solver_2.2.0.deb
 
 # ==== Done ====
 cd ..
