@@ -35,11 +35,12 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             $IMAGE \
             bash -c "apt update && \
+                     export DEBIAN_FRONTEND=noninteractive && \
                      apt install -y sudo git wget cmake make build-essential \
                      libeigen3-dev libgflags-dev libgoogle-glog-dev \
                      libatlas-base-dev libsuitesparse-dev fakeroot dpkg-dev && \
                      cd /workspace/projects/ceres-solver && \
-                     ARCH=$ARCH UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=${{ env.PROJ_PATH }} ./scripts/build_deb.sh"
+                     ARCH=$ARCH UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=/workspace/projects/ceres-solver ./scripts/build_deb.sh"
 
       - name: Rename .deb with matrix info
         run: |
