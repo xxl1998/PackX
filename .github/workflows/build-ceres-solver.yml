@@ -32,28 +32,10 @@ jobs:
         working-directory: ${{ env.PROJ_PATH }}
         run: ./scripts/build_deb.sh
 
-      - name: Move DEB file to known location
-        working-directory: ${{ env.PROJ_PATH }}
-        run: |
-          mkdir -p /tmp/artifacts
-          cp -v *.deb /tmp/artifacts/
-
-      - name: Upload artifact for host
+      - name: Upload DEB package
         uses: actions/upload-artifact@v4
         with:
           name: ceres-solver-deb
-          path: /tmp/artifacts/*.deb
-
-  upload:
-    name: Upload DEB from host
-    runs-on: ubuntu-latest
-    needs: build-ceres
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ceres-solver-deb
-          path: ./output
-
-      - name: List downloaded files
-        run: ls -l ./output
+          path: ${{ env.PROJ_PATH }}/*.deb
+          if-no-files-found: error
+          compression-level: 0
