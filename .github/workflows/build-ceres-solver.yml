@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-ceres:
-    name: Build Ceres Solver deb for ${{ matrix.arch }} / Ubuntu ${{ matrix.ubuntu }}
+    name: Build Ceres Solver deb for ${{ matrix.arch }} Ubuntu${{ matrix.ubuntu }}
     runs-on: ubuntu-latest
     env:
       REPO_PATH: ${{ github.workspace }}
@@ -55,3 +55,10 @@ jobs:
           path: projects/ceres-solver/ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb
           if-no-files-found: error
           compression-level: 0
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: projects/ceres-solver/ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
