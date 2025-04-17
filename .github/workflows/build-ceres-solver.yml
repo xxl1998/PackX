@@ -3,6 +3,9 @@ name: Build Ceres Solver DEB (Matrix)
 on:
   workflow_call:
 
+permissions:
+  contents: write
+
 jobs:
   build-ceres:
     name: Build Ceres Solver deb for ${{ matrix.arch }} Ubuntu${{ matrix.ubuntu }}
