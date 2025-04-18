@@ -63,9 +63,9 @@ jobs:
       - name: Install common packages
         if: matrix.use_chroot == false
         run: |
-          apt update
+          sudo apt update
           export DEBIAN_FRONTEND=noninteractive
-          apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
+          sudo apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
 
       - name: Run build script (native/container)
         if: matrix.use_chroot == false
