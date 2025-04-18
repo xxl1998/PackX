@@ -65,14 +65,12 @@ jobs:
           if ! command -v sudo >/dev/null 2>&1; then
             echo "[INFO] 'sudo' not found, installing..."
             apt update
-            export DEBIAN_FRONTEND=noninteractive
-            apt install -y sudo
+            DEBIAN_FRONTEND=noninteractive apt install -y sudo
           fi
 
           echo "[INFO] Installing common build tools..."
           sudo apt update
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt install -y git wget cmake make build-essential fakeroot dpkg-dev
+          DEBIAN_FRONTEND=noninteractive sudo apt install -y git wget cmake make build-essential fakeroot dpkg-dev
 
       - name: Run build script (native/container)
         if: matrix.use_chroot == false
@@ -100,9 +98,9 @@ jobs:
       - name: Rename .deb (chroot ARM64)
         if: matrix.use_chroot == true
         run: |
-          cd rootfs/root
-          DEB=$(ls *.deb | head -n 1)
-          mv "$DEB" "${{ env.PROJ_PATH }}/ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb"
+          sudo cd rootfs/root
+          DEB=$(sudo ls *.deb | head -n 1)
+          sudo mv "$DEB" "${{ env.PROJ_PATH }}/ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

@@ -9,7 +9,7 @@ URL=https://github.com/ceres-solver/ceres-solver/archive/refs/tags/$VERSION.tar.
 
 # ==== Install dependencies ====
 export DEBIAN_FRONTEND=noninteractive
-sudo apt install libeigen3-dev libgflags-dev libgoogle-glog-dev libatlas-base-dev libsuitesparse-dev -y
+DEBIAN_FRONTEND=noninteractive sudo apt install libeigen3-dev libgflags-dev libgoogle-glog-dev libatlas-base-dev libsuitesparse-dev -y
 
 # ==== Download source ====
 if [ ! -f $TARBALL ]; then

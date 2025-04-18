@@ -17,7 +17,7 @@ runs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         sudo apt update
-        sudo apt install -y qemu-user-static binfmt-support
+        DEBIAN_FRONTEND=noninteractive sudo apt install -y qemu-user-static binfmt-support
 
     - name: Download and extract rootfs
       shell: bash
@@ -45,14 +45,15 @@ runs:
     - name: Mount & Chroot & Build
       shell: bash
       run: |
-        sudo mount --bind /dev rootfs/dev
-        sudo mount --bind /proc rootfs/proc
-        sudo mount --bind /sys rootfs/sys
+        sudo mount -t proc /proc rootfs/proc
+        sudo mount -t sysfs /sys rootfs/sys
+        sudo mount -o bind /dev rootfs/dev
+        sudo mount -o bind /dev/pts rootfs/dev/pts
 
         sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
           export DEBIAN_FRONTEND=noninteractive
           apt update
-          apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
+          DEBIAN_FRONTEND=noninteractive apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
           cd /root
           ./build.sh
           ls -al /root
@@ -62,6 +63,7 @@ runs:
       if: always()
       shell: bash
       run: |
-        sudo umount rootfs/dev || true
         sudo umount rootfs/proc || true
         sudo umount rootfs/sys || true
+        sudo umount rootfs/dev/pts || true
+        sudo umount rootfs/dev || true
