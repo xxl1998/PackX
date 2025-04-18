@@ -1,0 +1,67 @@
+name: ARM64 Chroot Build
+description: Run build script in ARM64 Ubuntu Base chroot environment
+
+inputs:
+  ubuntu_version:
+    description: "Ubuntu version: 20.04 / 22.04 / 24.04"
+    required: true
+  build_script:
+    description: "Path to script in repo (run inside chroot at /root)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install QEMU and tools
+      shell: bash
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt update
+        sudo apt install -y qemu-user-static binfmt-support
+
+    - name: Download and extract rootfs
+      shell: bash
+      run: |
+        UBUNTU_VERSION=${{ inputs.ubuntu_version }}
+        case "$UBUNTU_VERSION" in
+          20.04) BASE_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/20.04/release/ubuntu-base-20.04.5-base-arm64.tar.gz" ;;
+          22.04) BASE_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.5-base-arm64.tar.gz" ;;
+          24.04) BASE_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz" ;;
+          *) echo "Unsupported version"; exit 1 ;;
+        esac
+
+        mkdir rootfs
+        wget -q "$BASE_URL" -O ubuntu-base.tar.gz
+        sudo tar -xf ubuntu-base.tar.gz -C rootfs
+        sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
+        echo "nameserver 8.8.8.8" | sudo tee rootfs/etc/resolv.conf
+
+    - name: Copy build script into chroot environment
+      shell: bash
+      run: |
+        sudo cp "${{ inputs.build_script }}" rootfs/root/build.sh
+        sudo chmod +x rootfs/root/build.sh
+
+    - name: Mount & Chroot & Build
+      shell: bash
+      run: |
+        sudo mount --bind /dev rootfs/dev
+        sudo mount --bind /proc rootfs/proc
+        sudo mount --bind /sys rootfs/sys
+
+        sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
+          export DEBIAN_FRONTEND=noninteractive
+          apt update
+          apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
+          cd /root
+          ./build.sh
+          ls -al /root
+        "
+
+    - name: Cleanup
+      if: always()
+      shell: bash
+      run: |
+        sudo umount rootfs/dev || true
+        sudo umount rootfs/proc || true
+        sudo umount rootfs/sys || true

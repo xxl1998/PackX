@@ -75,7 +75,7 @@ jobs:
 
       - name: Run build script (chroot)
         if: matrix.use_chroot
-        uses: ./.github/workflows/arm64-build.yml
+        uses: ./.github/actions/arm64-build
         with:
           ubuntu_version: ${{ matrix.ubuntu }}
           build_script: projects/ceres-solver/scripts/build_deb.sh
