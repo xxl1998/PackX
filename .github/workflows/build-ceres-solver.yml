@@ -63,9 +63,17 @@ jobs:
       - name: Install common packages
         if: matrix.use_chroot == false
         run: |
+          if ! command -v sudo >/dev/null 2>&1; then
+            echo "[INFO] 'sudo' not found, installing..."
+            apt update
+            export DEBIAN_FRONTEND=noninteractive
+            apt install -y sudo
+          fi
+
+          echo "[INFO] Installing common build tools..."
           sudo apt update
           export DEBIAN_FRONTEND=noninteractive
-          sudo apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
+          sudo apt install -y git wget cmake make build-essential fakeroot dpkg-dev
 
       - name: Run build script (native/container)
         if: matrix.use_chroot == false
