@@ -23,14 +23,14 @@ jobs:
 
           - arch: amd64
             ubuntu: "22.04"
-            runs_on: ubuntu-22.04
-            container_image: ""
+            runs_on: ubuntu-latest
+            container_image: ubuntu:22.04
             use_chroot: false
 
           - arch: amd64
             ubuntu: "24.04"
-            runs_on: ubuntu-24.04
-            container_image: ""
+            runs_on: ubuntu-latest
+            container_image: ubuntu:24.04
             use_chroot: false
 
           - arch: arm64
