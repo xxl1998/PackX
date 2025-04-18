@@ -9,47 +9,90 @@ permissions:
 jobs:
   build-ceres:
     name: Build Ceres Solver deb for ${{ matrix.arch }} Ubuntu${{ matrix.ubuntu }}
-    runs-on: ubuntu-latest
     env:
       REPO_PATH: ${{ github.workspace }}
       PROJ_PATH: ${{ github.workspace }}/projects/ceres-solver
     strategy:
       matrix:
-        arch: [amd64, arm64]
-        ubuntu: [20.04, 22.04, 24.04]
+        include:
+          - arch: amd64
+            ubuntu: "20.04"
+            runs_on: ubuntu-latest
+            container_image: ubuntu:20.04
+            use_chroot: false
+
+          - arch: amd64
+            ubuntu: "22.04"
+            runs_on: ubuntu-22.04
+            container_image: ""
+            use_chroot: false
+
+          - arch: amd64
+            ubuntu: "24.04"
+            runs_on: ubuntu-24.04
+            container_image: ""
+            use_chroot: false
+
+          - arch: arm64
+            ubuntu: "20.04"
+            runs_on: ubuntu-latest
+            container_image: ""
+            use_chroot: true
+
+          - arch: arm64
+            ubuntu: "22.04"
+            runs_on: ubuntu-latest
+            container_image: ""
+            use_chroot: true
+
+          - arch: arm64
+            ubuntu: "24.04"
+            runs_on: ubuntu-latest
+            container_image: ""
+            use_chroot: true
+
+    runs-on: ${{ matrix.runs_on }}
+    container:
+      image: ${{ matrix.container_image }}
+      options: --privileged
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and Package in Docker
+      - name: Install common packages
+        if: matrix.use_chroot == false
         run: |
-          IMAGE=ubuntu:${{ matrix.ubuntu }}
-          ARCH=${{ matrix.arch }}
-          TAG=ceres-${ARCH}-ubuntu${{ matrix.ubuntu }}
+          apt update
+          export DEBIAN_FRONTEND=noninteractive
+          apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
 
-          docker run --rm --platform=linux/${ARCH} \
-            -v ${{ github.workspace }}:/workspace \
-            $IMAGE \
-            bash -c "apt update && \
-                     export DEBIAN_FRONTEND=noninteractive && \
-                     apt install -y sudo git wget cmake make build-essential \
-                     libeigen3-dev libgflags-dev libgoogle-glog-dev \
-                     libatlas-base-dev libsuitesparse-dev fakeroot dpkg-dev && \
-                     cd /workspace/projects/ceres-solver && \
-                     ARCH=$ARCH UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=/workspace/projects/ceres-solver ./scripts/build_deb.sh"
-
-      - name: Rename .deb with matrix info
+      - name: Run build script (native/container)
+        if: matrix.use_chroot == false
         run: |
-          cd projects/ceres-solver
-          DEB=$(ls *.deb)
+          cd ${{ env.PROJ_PATH }}
+          ARCH=${{ matrix.arch }} UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=${{ env.PROJ_PATH }} ./scripts/build_deb.sh
+
+      - name: Run build script (chroot)
+        if: matrix.use_chroot
+        uses: ./.github/workflows/arm64-build.yml
+        with:
+          ubuntu_version: ${{ matrix.ubuntu }}
+          build_script: projects/ceres-solver/scripts/build_deb.sh
+
+      - name: Rename .deb (native/container)
+        if: matrix.use_chroot == false
+        run: |
+          cd ${{ env.PROJ_PATH }}
+          DEB=$(ls *.deb | head -n 1)
           mv "$DEB" "ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb"
+
+      - name: Rename .deb (chroot ARM64)
+        if: matrix.use_chroot == true
+        run: |
+          cd rootfs/root
+          DEB=$(ls *.deb | head -n 1)
+          mv "$DEB" "${{ env.PROJ_PATH }}/ceres-solver_2.2.0_${{ matrix.arch }}_ubuntu${{ matrix.ubuntu }}.deb"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

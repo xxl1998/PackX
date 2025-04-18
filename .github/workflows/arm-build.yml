@@ -1,0 +1,70 @@
+name: ARM64 Chroot Builder
+
+on:
+  workflow_call:
+    inputs:
+      ubuntu_version:
+        required: true
+        type: string
+        description: "Ubuntu version: 20.04 / 22.04 / 24.04"
+      build_script:
+        required: true
+        type: string
+        description: "Path to shell script to run inside chroot (relative to repo root)"
+      
+jobs:
+  run-arm64-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install QEMU and tools
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt update
+          sudo apt install -y qemu-user-static binfmt-support
+
+      - name: Download and extract rootfs
+        run: |
+          UBUNTU_VERSION=${{ inputs.ubuntu_version }}
+          case "$UBUNTU_VERSION" in
+            20.04) BASE_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/20.04/release/ubuntu-base-20.04.5-base-arm64.tar.gz" ;;
+            22.04) BASE_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.5-base-arm64.tar.gz" ;;
+            24.04) BASE_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz" ;;
+            *) echo "Unsupported Ubuntu version: $UBUNTU_VERSION" && exit 1 ;;
+          esac
+
+          mkdir rootfs
+          wget -q "$BASE_URL" -O ubuntu-base.tar.gz
+          sudo tar -xf ubuntu-base.tar.gz -C rootfs
+          sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
+          echo "nameserver 8.8.8.8" | sudo tee rootfs/etc/resolv.conf
+
+      - name: Copy build script into chroot environment
+        run: |
+          sudo cp "${{ inputs.build_script }}" rootfs/root/build.sh
+          sudo chmod +x rootfs/root/build.sh
+
+      - name: Mount & Chroot & Build
+        run: |
+          sudo mount --bind /dev rootfs/dev
+          sudo mount --bind /proc rootfs/proc
+          sudo mount --bind /sys rootfs/sys
+
+          sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
+            export DEBIAN_FRONTEND=noninteractive
+            apt update
+            apt install -y sudo git wget cmake make build-essential fakeroot dpkg-dev
+            cd /root
+            ./build.sh
+            ls -al /root
+          "
+
+      - name: Cleanup
+        if: always()
+        run: |
+          sudo umount rootfs/dev || true
+          sudo umount rootfs/proc || true
+          sudo umount rootfs/sys || true

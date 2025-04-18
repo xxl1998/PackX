@@ -7,6 +7,10 @@ SRC_DIR=${PROJ_PATH}/ceres-solver-$VERSION
 TARBALL=ceres-solver-$VERSION.tar.gz
 URL=https://github.com/ceres-solver/ceres-solver/archive/refs/tags/$VERSION.tar.gz
 
+# ==== Install dependencies ====
+export DEBIAN_FRONTEND=noninteractive
+sudo apt install libeigen3-dev libgflags-dev libgoogle-glog-dev libatlas-base-dev libsuitesparse-dev -y
+
 # ==== Download source ====
 if [ ! -f $TARBALL ]; then
   echo "Downloading Ceres Solver $VERSION source..."
