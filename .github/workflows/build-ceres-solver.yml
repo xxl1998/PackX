@@ -77,8 +77,11 @@ jobs:
       - name: Run build script (native/container)
         if: matrix.use_chroot == false
         run: |
-          cd ${{ env.PROJ_PATH }}
-          ARCH=${{ matrix.arch }} UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=${{ env.PROJ_PATH }} ./scripts/build_deb.sh
+          echo "Workspace is: $GITHUB_WORKSPACE"
+          ls -al $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE/projects/ceres-solver
+          echo "github.workspace: ${{ github.workspace }}"
+          ARCH=${{ matrix.arch }} UBUNTU_VER=${{ matrix.ubuntu }} PROJ_PATH=$GITHUB_WORKSPACE/projects/ceres-solver ./scripts/build_deb.sh
 
       - name: Run build script (chroot)
         if: matrix.use_chroot
