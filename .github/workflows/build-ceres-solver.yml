@@ -10,8 +10,7 @@ jobs:
   build-ceres:
     name: Build Ceres Solver deb for ${{ matrix.arch }} Ubuntu${{ matrix.ubuntu }}
     env:
-      REPO_PATH: ${{ github.workspace }}
-      PROJ_PATH: ${{ github.workspace }}/projects/ceres-solver
+      PROJ_PATH: projects/ceres-solver
     strategy:
       matrix:
         include:
